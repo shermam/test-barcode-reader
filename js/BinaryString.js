@@ -8,6 +8,8 @@ export function BinaryString(img, Image, FormatPriority) {
     var container = 255;
     var count = 0;
     var j, i;
+    var success = false;
+
     for (j = 0; j < img.length - Image.width * 4; j += Image.width * 4) {
         var SlicedArray = img.subarray(j, j + Image.width * 4);
         binaryString = [];
@@ -27,29 +29,18 @@ export function BinaryString(img, Image, FormatPriority) {
         if (binaryString.length > 2 && binaryString[0] <= binaryString[1] / 10) {
             binaryString.splice(0, 2);
         }
-        var binaryHolder = binaryString.slice();
-        var success = false;
 
-        binaryString = binaryHolder.slice();
-        var first;
-        var second;
         binaryString = BinaryConfiguration(binaryString, FormatPriority[0]);
-
         binaryString = Distribution(binaryString, FormatPriority[0]);
 
         if (typeof binaryString === 'undefined') continue;
-        if (binaryString.length > 4 || (FormatPriority[0] === "Code39" && binaryString.length > 2)) {
-            if (FormatPriority[0] === "Code128") {
-                if (CheckCode128(binaryString)) {
-                    binaryString = DecodeCode128(binaryString);
-                    success = true;
-                }
-            }
+        if (binaryString.length > 4 && CheckCode128(binaryString)) {
 
+            binaryString = DecodeCode128(binaryString);
+            success = true;
         }
         if (success) break;
     }
+
     return binaryString;
-
-
 }
