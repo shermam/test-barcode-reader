@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible"
+              content="ie=edge">
+        <title>Reader</title>
+
+        <style>
+            canvas {
+                image-rendering: pixelated;
+            }
+        </style>
+    </head>
+
+    <body>
+        <canvas id="barcode-canvas"></canvas>
+        <br>
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+        <button id="clear">clear</button>
+        <button id="save">save</button>
+        <button id="bw">Black/White</button>
+        <input type="range"
+               name="range"
+               id="range"
+               min="0"
+               max="255" />
+
+
+        <p id="range-value"></p>
+
+        <script src="js/main.js"
+                type="module"></script>
+    </body>
+
+</html>
