@@ -12,11 +12,16 @@
         <style>
             canvas {
                 image-rendering: pixelated;
+                width: 300px;
             }
         </style>
     </head>
 
     <body>
+        <p id="code"></p>
+        <input id="file"
+               type="file"
+               accept="image/jpg">
         <canvas id="barcode-canvas"></canvas>
         <br>
         <button id="start">Start</button>
@@ -24,6 +29,7 @@
         <button id="clear">clear</button>
         <button id="save">save</button>
         <button id="bw">Black/White</button>
+        <button id="detectar">detectar</button>
         <input type="range"
                name="range"
                id="range"

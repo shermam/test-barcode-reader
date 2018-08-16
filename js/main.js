@@ -12,6 +12,8 @@ import { histogram } from "./histogram.js";
 import { maxLocalization } from "./maxlocalizatoin.js";
 import { fillLocations } from "./fillLocations.js";
 import { CreateTable } from "./createtable.js";
+import { readAsDataURL } from "./readAsDataURL.js";
+import { Scale } from "./scale.js";
 
 
 var tracks = [];
@@ -23,6 +25,8 @@ var bw = document.querySelector('#bw');
 var clear = document.querySelector('#clear');
 var range = document.querySelector('#range');
 var save = document.querySelector('#save');
+var detectar = document.querySelector('#detectar');
+var file = document.querySelector('#file');
 var p = document.querySelector('#range-value');
 var canvas = document.querySelector('#barcode-canvas');
 var context = canvas.getContext('2d');
@@ -30,7 +34,11 @@ var video = document.createElement('video');
 var videoConstraints = { video: { facingMode: { ideal: "environment" } } };
 var isClosed = false;
 var trashhold = 127;
+var codelable = document.querySelector('#code');
 //var detector = new BarcodeDetector;
+window.onerror = function (error) {
+    codelable.innerHTML += JSON.stringify(error) + '<br>';
+}
 
 var max = 0;
 var min = 255;
@@ -41,9 +49,50 @@ save.onclick = function () {
     window.location.href = image; // it will save locally
 }
 
-clear.onclick = function () {
-    p.innerHTML = '';
+clear.onclick = carregaImagem;
+file.onchange = carregaImagem;
+
+function carregaImagem() {
+    codelable.innerHTML += 'Change 3';
+    codelable.innerHTML += JSON.stringify(file.files);
+    readAsDataURL(file.files[0]).then(function (resposta) {
+        codelable.innerHTML += 'leu arquivo';
+        var image = new Image;
+        image.onload = function () {
+            codelable.innerHTML += 'Carregou imagem: ' + image.naturalWidth;
+
+            startFN(image);
+        }
+        image.src = resposta.content;
+    });
+
 }
+
+detectar.onclick = function () {
+
+    codelable.innerHTML += `Width: ${canvas.width / 2}, Height: ${canvas.height / 2}`;
+    var data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    var id = new ImageData(Scale(data, canvas.width, canvas.height), canvas.width / 2, canvas.height / 2);
+    context.putImageData(id, 0, 0);
+
+    // context.fillStyle = '#000000';
+    // context.fillRect(0, 0, 300, 300);
+
+
+    detectBarcode({
+        scan: id.data,
+        scanWidth: id.width,
+        scanHeight: id.height,
+        cmd: 'normal',
+        rotation: 1,
+        id: 1
+    }, 0)
+    codelable.innerHTML += 'Pelo menons não deu erro';
+};
+
+
+
 
 range.onchange = function () {
     trashhold = range.value;
@@ -63,18 +112,18 @@ stop.onclick = function () {
 
 start.onclick = startFN;
 
-startFN();
+//startFN();
 
-function startFN() {
+function startFN(video) {
 
     //navigator.getUserMedia(videoConstraints, treatStream, console.log);
 
-    video = new Image;
-    video.onload = function () {
-        canvas.width = video.width;
-        canvas.height = video.height;
-    }
-    video.src = 'Capturar1.PNG';
+    // video = new Image;
+    // video.onload = function () {
+    canvas.width = video.width;
+    canvas.height = video.height;
+    // }
+    // video.src = 'Capturar1.PNG';
     //video.src = 'download1.png';
 
 
@@ -143,28 +192,39 @@ function startFN() {
         //     context.stroke();
         // }
 
-        if (!isClosed) requestAnimationFrame(draw);
+        //if (!isClosed) requestAnimationFrame(draw);
     });
 
-    detectBarcode();
+    // detectBarcode({
+    //     scan: context.getImageData(0, 0, canvas.width, canvas.height).data,
+    //     scanWidth: canvas.width,
+    //     scanHeight: canvas.height,
+    //     cmd: 'normal',
+    //     rotation: 1,
+    //     id: 1
+    // }, 1000);
 
 };
 
 
-function detectBarcode() {
+function detectBarcode(data, timeout) {
     setTimeout(function readBarCode() {
         var resposta = detect({
-            data: {
-                scan: context.getImageData(0, 0, canvas.width, canvas.height).data,
-                scanWidth: canvas.width,
-                scanHeight: canvas.height,
-                cmd: 'normal',
-                rotation: 1,
-                id: 1
-            }
+            data: data
         });
 
-        console.log(resposta.result[0].Value);
+        try {
 
-    }, 1000);
+            var resposta = resposta.result[0].Value;
+
+            codelable.innerHTML = resposta;
+
+            console.log(resposta);
+        } catch (error) {
+            console.log(error);
+            codelable.innerHTML += error.message + '<br>';
+
+        }
+
+    }, timeout);
 }
